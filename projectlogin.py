@@ -1,4 +1,11 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+# Item Catalog Application Project
+from flask import (Flask, 
+                  render_template, 
+                  request, 
+                  redirect, 
+                  jsonify, 
+                  url_for, 
+                  flash)
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem, User
@@ -33,7 +40,7 @@ session = DBsession()
 def login_required(l):
     @wraps(l)
     def decorated_function(*arg, **kwarg):
-        if 'user_name' not in login_session:
+        if 'username' not in login_session:
             return redirect('/login')
         return l(*arg, **kwarg)
     return decorated_function
@@ -240,6 +247,7 @@ def showRestaurants():
 
 # Create a new restaurant
 @app.route('/restaurant/new/', methods=['GET','POST'])
+@login_required
 def newRestaurant():
     if request.method == 'POST':
         newRestaurant = Restaurant(name = request.form['name'], user_id = login_session['user_id'])
@@ -252,6 +260,7 @@ def newRestaurant():
 
 # Edit a restaurant
 @app.route('/restaurant/<int:restaurant_id>/edit/', methods = ['GET', 'POST'])
+@login_required
 def editRestaurant(restaurant_id):
   editedRestaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
   if editedRestaurant.user_id != login_session['user_id']:
@@ -264,11 +273,12 @@ def editRestaurant(restaurant_id):
         flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
         return redirect(url_for('showRestaurants'))
       else:
-       return render_template('editRestaurant.html', restaurant = editedRestaurant)
+           return render_template('editRestaurant.html', restaurant = editedRestaurant)
 
 
 # Delete a restaurant
 @app.route('/restaurant/<int:restaurant_id>/delete/', methods = ['GET','POST'])
+@login_required
 def deleteRestaurant(restaurant_id):
     restaurantToDelete = session.query(Restaurant).filter_by(id = restaurant_id).one()
     if restaurantToDelete.user_id != login_session['user_id']:
@@ -281,7 +291,7 @@ def deleteRestaurant(restaurant_id):
       session.commit()
       return redirect(url_for('showRestaurants', restaurant_id = restaurant_id))
     else:
-      return render_template('deleteRestaurant.html',restaurant = restaurantToDelete)
+         return render_template('deleteRestaurant.html',restaurant = restaurantToDelete)
 
 # Show a restaurant menu
 @app.route('/restaurant/<int:restaurant_id>/')
@@ -292,13 +302,16 @@ def showMenu(restaurant_id):
     items = session.query(MenuItem).filter_by(restaurant_id = restaurant_id).all()
 
     if 'username' not in login_session:
-       return render_template('publicmenu.html', items = items, restaurant = restaurant, creator = creator)
+       return render_template('publicmenu.html', items = items, \
+                              restaurant = restaurant, creator = creator)
     else:
-       return render_template('menu.html', items=items, restaurant=restaurant, creator=creator)
+       return render_template('menu.html', items=items, \
+                              restaurant=restaurant, creator=creator)
 
 
 # Create a new menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/new/',methods=['GET','POST'])
+@login_required
 def newMenuItem(restaurant_id):
   restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
@@ -314,6 +327,7 @@ def newMenuItem(restaurant_id):
 
 # Edit a menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
+@login_required
 def editMenuItem(restaurant_id, menu_id):
     editedItem = session.query(MenuItem).filter_by(id = menu_id).one()
     restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
@@ -342,7 +356,7 @@ def editMenuItem(restaurant_id, menu_id):
 
 # Delete a menu item
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods = ['GET','POST'])
-
+@login_required
 def deleteMenuItem(restaurant_id,menu_id):
     restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
     itemToDelete = session.query(MenuItem).filter_by(id = menu_id).one()
