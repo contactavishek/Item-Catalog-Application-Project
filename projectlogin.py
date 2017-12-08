@@ -12,7 +12,8 @@ from database_setup import Base, Restaurant, MenuItem, User
 
 # Import Login session
 from flask import session as login_session
-import random, string
+import random
+import string
 
 # Imports for gconnect
 from oauth2client.client import flow_from_clientsecrets
@@ -36,6 +37,7 @@ session = DBsession()
 
 # Create a state token to request forgery and
 # store it in the session for later validation
+
 
 def login_required(l):
     @wraps(l)
@@ -265,15 +267,17 @@ def editRestaurant(restaurant_id):
   editedRestaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
   if editedRestaurant.user_id != login_session['user_id']:
      return "<script>function myFunction(){alert('You are not authorized to edit \
-       this restaurant. please create your own restaurant in order to edit.');} \
+     this restaurant. Please create your own restaurant in order to edit.');} \
        </script><body onload='myFunction()''>"
   if request.method == 'POST':
       if request.form['name']:
-        editedRestaurant.name = request.form['name']
-        flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
-        return redirect(url_for('showRestaurants'))
-      else:
-           return render_template('editRestaurant.html', restaurant = editedRestaurant)
+                 editedRestaurant.name = request.form['name']
+                 session.add(editedRestaurant)
+                 session.commit()
+                 flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
+                 return redirect(url_for('showRestaurants'))
+  else:
+      return render_template('editRestaurant.html', restaurant = editedRestaurant)
 
 
 # Delete a restaurant
@@ -283,7 +287,7 @@ def deleteRestaurant(restaurant_id):
     restaurantToDelete = session.query(Restaurant).filter_by(id = restaurant_id).one()
     if restaurantToDelete.user_id != login_session['user_id']:
        return "<script>function myFunction() {alert('you are not authorized to \
-         delete this restaurant.please create your own restaurant to delete');}\
+       delete this restaurant. Please create your own restaurant to delete');}\
          </script><body onLoad = 'myFunction()''>"
     if request.method == 'POST':
       session.delete(restaurantToDelete)
@@ -333,8 +337,8 @@ def editMenuItem(restaurant_id, menu_id):
     restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
     if login_session['user_id'] != restaurant.user_id:
         return "<script>function myFunction() {alert('You are not authorized to \
-          edit menu items to this restaurant.Please create your own restaurant in \
-          order to edit items.');}</script><body onload='myFunction()''>"
+        edit menu items to this restaurant. Please create your own restaurant in \
+        order to edit items.');}</script><body onload='myFunction()''>"
 
     if request.method == 'POST':
         if request.form['name']:
@@ -362,8 +366,8 @@ def deleteMenuItem(restaurant_id,menu_id):
     itemToDelete = session.query(MenuItem).filter_by(id = menu_id).one()
     if login_session['user_id'] != restaurant.user_id:
        return "<script>function myFunction() {alert ('you are not authorized to \
-         delete menu items to this restaurant.please create your own restaurant \
-         in order to delete items');}</script><body onload='myFunction()''>"
+       delete menu items to this restaurant. Please create your own restaurant \
+       in order to delete items');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(itemToDelete)
         session.commit()
