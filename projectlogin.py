@@ -134,8 +134,8 @@ def gconnect():
     if user_id:
         print 'Existing user#' + str(user_id) + 'matches this email'
     else:
-         user_id = createUser(login_session)
-         print 'New user_id#' + str(user_id) + 'created'
+        user_id = createUser(login_session)
+        print 'New user_id#' + str(user_id) + 'created'
     login_session['user_id'] = user_id
     print 'Login session is tied to :id#' + str(login_session['user_id'])
 
@@ -288,7 +288,7 @@ def editRestaurant(restaurant_id):
                 editedRestaurant.name = request.form['name']
                 session.add(editedRestaurant)
                 session.commit()
-                flash('Restaurant Successfully Edited %s' 
+                flash('Restaurant Successfully Edited %s'
                       % editedRestaurant.name)
                 return redirect(url_for('showRestaurants'))
     else:
