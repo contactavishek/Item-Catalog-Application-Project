@@ -1,11 +1,6 @@
 # Item Catalog Application Project
-from flask import (Flask, 
-                  render_template, 
-                  request, 
-                  redirect, 
-                  jsonify, 
-                  url_for, 
-                  flash)
+from flask import (Flask, render_template, request, redirect, jsonify,
+                   url_for, flash)
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem, User
@@ -18,7 +13,9 @@ import string
 # Imports for gconnect
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
-import httplib2, json, requests
+import httplib2
+import json
+import requests
 from flask import make_response
 
 # Import login decorator
@@ -26,13 +23,14 @@ from functools import wraps
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(
+     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Restaurant Menu Application"
 
 engine = create_engine('sqlite:///restaurantmenuwithusers.db')
 Base.metadata.bind = engine
 
-DBsession = sessionmaker(bind = engine)
+DBsession = sessionmaker(bind=engine)
 session = DBsession()
 
 # Create a state token to request forgery and
@@ -47,19 +45,21 @@ def login_required(l):
         return l(*arg, **kwarg)
     return decorated_function
 
+
 @app.route('/login')
 def showlogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                   for x in xrange(32))
+                    for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', STATE = state)
+    return render_template('login.html', STATE=state)
 
-@app.route('/gconnect', methods = ['POST'])
+
+@app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
-    if request.args.get('state')!= login_session['state']:
+    if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
-        response.headers['Content-Type']= 'application-json'
+        response.headers['Content-Type'] = 'application-json'
         return response
     # Obtain authorization code
     code = request.data
